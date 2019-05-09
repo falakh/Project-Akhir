@@ -99,9 +99,10 @@ public class Tank : MonoBehaviour
 
     }
 
+	private int turn = 0;
 	void Update ()
 	{
-
+		turn = 0;
         _infvelocity = rig.velocity;
         reloadTimer += Time.deltaTime;
         _infreloadTimer = reloadTimer;
@@ -131,16 +132,17 @@ public class Tank : MonoBehaviour
 	//sending over an "x" value, set to either 1 or 0, depending if they are moving left or right.
 	public void Turn (int x)
 	{
-        if (x > 1)
-        {
-            x = 1;
-        }
-        else if (x < -1)
-        {
-            x = -1;
-        }
-        transform.Rotate(-Vector3.forward * x * turnSpeed * Time.deltaTime);
-		_infdirection = transform.rotation * Vector3.up;
+		turn++;
+
+		if (turn == 1) {
+			if (x > 1) {
+				x = 1;
+			} else if (x < -1) {
+				x = -1;
+			}
+			transform.Rotate (-Vector3.forward * x * turnSpeed * Time.deltaTime);
+			_infdirection = transform.rotation * Vector3.up;
+		}
 	}
 
 	//Called by the Contols.cs script. When a player presses their shoot key, it calls this function, making the tank shoot.

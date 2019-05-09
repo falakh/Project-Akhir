@@ -62,14 +62,24 @@ public class AI_CONTROLLER_Tim_Ayam_Bakar : MonoBehaviour
 
     private HashSet<Vector3> wallSheet;
     private HashSet<Vector3> visited;
+    private int direction=1;
+    private float durasiPatrol = 2;
+    private float currentDuration;
 
     void Start()
     {
         visited = new HashSet<Vector3>();
         wallSheet = new HashSet<Vector3>();
         tank = GetComponent<Tank>();
+        currentDuration = durasiPatrol;
+
     }
 
+
+    private bool stillPatrol =true;
+    
+
+    
     // Update is called once per frame
     void Update()
     {
@@ -77,9 +87,35 @@ public class AI_CONTROLLER_Tim_Ayam_Bakar : MonoBehaviour
             Vector2.zero; //disarankan jgn dihapus agar tank anda tidak jalan terus krn velocity, silahkan dihapus jika anda mengerti apa yg anda lakukan 
         visited.Add(transform.position);
 
-        if (!tank._infIsEnemySeen || cekWall().Contains(WallStaus.Front))
+        if (!tank._infIsEnemySeen || cekWall().Length != 0)
         {
-            Patrol();
+            
+            if (currentDuration >= 0 && stillPatrol)
+            {
+                var gacha = Random.Range(-direction-1,direction+1) ;
+                tank.Turn(direction);
+                currentDuration -= Time.deltaTime;
+                stillPatrol = true;
+                if (currentDuration <= 0)
+                {
+                    durasiPatrol = Random.Range(1, 4);
+                    stillPatrol = false;
+                    direction *= -1;
+                }
+
+            }
+            else if(currentDuration < durasiPatrol * 2 && !stillPatrol)
+            {
+                Patrol();
+                
+                currentDuration +=Time.deltaTime ;
+                if (currentDuration > durasiPatrol)
+                {
+                    stillPatrol = true;
+                    currentDuration /= 2;
+                }
+            }
+            
         }
         else
         {
@@ -87,11 +123,12 @@ public class AI_CONTROLLER_Tim_Ayam_Bakar : MonoBehaviour
             var enemyVector = enemyPos - transform.position;
             var rotate = Vector3.Cross(enemyVector, transform.up);
             tank.Turn((int) rotate.normalized.z);
-
-            if (rotate.normalized.z <= 1 && rotate.normalized.z >= 0)
-            {
-                tank.Shoot();
-            }
+                if (rotate.normalized.z <= 1 && rotate.normalized.z >= 0)
+                {
+                        tank.Shoot();
+                        tank.Move(1);
+                }
+    
         }
     }
 
@@ -100,33 +137,13 @@ public class AI_CONTROLLER_Tim_Ayam_Bakar : MonoBehaviour
     {
         if (cekWall().Length == 0)
         {
-//            if (!cekWall().Contains(WallStaus.Front))
-//            {
-//                tank.Move(1);
-//            }
-//
-//           else if (!cekWall().Contains(WallStaus.Right))
-//            {
-//                tank.Turn(1);
-//            }
-//
-//           else if (!cekWall().Contains(WallStaus.Left))
-//            {
-//                tank.Turn(-1);
-//            }
-//
-//            else if (!cekWall().Contains(WallStaus.Back))
-//            {
-//                tank.Turn(1);
-//              
-//            }
 
             tank.Move(1);
             visited.Add(transform.position);
         }
         else
         {
-            tank.Turn(1);
+            tank.Turn(direction);
         }
     }
 
@@ -150,20 +167,7 @@ public class AI_CONTROLLER_Tim_Ayam_Bakar : MonoBehaviour
                     wallStatus.Add(WallStaus.Front);
                 }
 
-//                if (dotLeft >= 1)
-//                {
-//                    wallStatus.Add(WallStaus.Left);
-//                }
-//
-//                if (dotRight >= 1)
-//                {
-//                    wallStatus.Add(WallStaus.Right);
-//                }
-//
-//                if (dotBack >= 1)
-//                {
-//                    wallStatus.Add(WallStaus.Back);
-//                }
+//       
             }
         }
 
@@ -171,23 +175,7 @@ public class AI_CONTROLLER_Tim_Ayam_Bakar : MonoBehaviour
     }
 
 
-    float RecomRotation()
-    {
-        HashSet<WallStaus> wallStatus = new HashSet<WallStaus>();
-        foreach (var wall in tank._infLastposWall)
-        {
-            var temp = wall - transform.position;
-            if (Vector3.Distance(wall, transform.position) < distanceTressHolde)
-            {
-                var heading = wall - transform.position;
-                wallSheet.Add(wall);
-                var dotHeading = Vector3.Cross(heading, transform.up);
-                return -dotHeading.normalized.z;
-            }
-        }
 
-        return 0;
-    }
 }
 
 enum WallStaus
